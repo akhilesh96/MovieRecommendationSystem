@@ -1,0 +1,29 @@
+
+{% block title %}Genre{% endblock %}
+
+
+{% block body %}
+<div class="container-fluid">
+
+    <div class="row">
+        <div class="col-sm-12 col-md-8">
+            <div class="panel panel-default">
+                <div class="panel-body">
+                    <h3>test</h3>
+<form action="{% url  'movies:home' %}" method="post">
+     {% csrf_token %}
+    {{ genreform.as_p }}
+
+
+    <p><input type="submit" value="Finish" /></p>
+</form>
+                </div>
+
+            </div>
+        </div>
+    </div>
+
+</div>
+
+{% endblock %}
+
