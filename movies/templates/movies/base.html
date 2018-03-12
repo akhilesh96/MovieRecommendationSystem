@@ -67,8 +67,16 @@
 			</div> <!-- cd-login -->
 
 			<div id="cd-signup"> <!-- sign up form -->
+				{% if error %}
+        			<p style="color: red;">
+            			Please submit a search term 20 characters or shorter.
+        			</p>
+    			{% endif %}
 				<form class="cd-form" action="{% url 'movies:signup' %}" method="post">
                     {% csrf_token %}
+					{% if error_message %}
+                        <p><strong>{{ error_message }}</strong></p>
+                    {% endif %}
 					<p class="fieldset">
 						<label class="image-replace cd-username" for="signup-username">Username</label>
 						<input name="username_reg" class="full-width has-padding has-border" id="signup-username" type="text" placeholder="Username">
