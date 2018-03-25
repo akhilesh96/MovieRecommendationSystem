@@ -42,11 +42,16 @@
                     {% csrf_token %}
                     {% if error_message %}
                         <p><strong>{{ error_message }}</strong></p>
+
+    					<script src="{% static 'movies/js/main.js' %}">
+							this.login_selected();
+						</script>
+
                     {% endif %}
 					<p class="fieldset">
 						<label class="image-replace cd-email" for="signin-email">E-mail/Username</label>
-						<input name="user_field" class="full-width has-padding has-border" id="signin-email" type="text" placeholder="E-mail">
-						<span class="cd-error-message">Error message here!</span>
+						<input name="user_field" class="full-width has-padding has-border" id="signin-email" type="text" placeholder="Username/E-mail">
+						<span class="cd-error-message">{{ error_message }}</span>
 					</p>
 
 					<p class="fieldset">
@@ -74,9 +79,7 @@
     			{% endif %}
 				<form class="cd-form" action="{% url 'movies:signup' %}" method="post">
                     {% csrf_token %}
-					{% if error_message %}
-                        <p><strong>{{ error_message }}</strong></p>
-                    {% endif %}
+
 					<p class="fieldset">
 						<label class="image-replace cd-username" for="signup-username">Username</label>
 						<input name="username_reg" class="full-width has-padding has-border" id="signup-username" type="text" placeholder="Username">
