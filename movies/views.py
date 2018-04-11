@@ -1,3 +1,4 @@
+from __future__ import division
 from django.shortcuts import render, redirect
 from django.contrib.auth import authenticate, login
 from django.contrib.auth import logout
@@ -105,7 +106,9 @@ def retreive(UserRequest):
     ratings = Ratings(m=3.5, C=50)
     genrerecommend={}
 
-    topratedmovies=ratings.top_movies(n=100)
+    topratedmovies=ratings.top_movies(n=150)
+    topratedmovies=topratedmovies.sort_values(by='bayes',ascending=False)
+
     for r in topratedmovies.iterrows():
         moviegenres=r[0][1].split('|')
         count=0
@@ -114,29 +117,55 @@ def retreive(UserRequest):
                 k=int(i)
                 if Matrix[k-1][0]:
                     count=count+1
-        genrerecommend[r[0][0],r[0][2]]=count
+        bayesscore=round(r[1][0],3)
+        genrerecommend[r[0][0],r[0][2],bayesscore]=count*bayesscore
+
     sorted_genres = sorted(genrerecommend.items(), key=operator.itemgetter(1),reverse=True)
+
     movie_id=[]
     imdb_id=[]
-    movies_list=[]
+    movies_list={}
+    # movies_list=[]
+    d=[]
     for i in sorted_genres[:6]:
         movie_id.append(i[0][1])
-        movies_list.append(i[0][0])
-    for j in movie_id:
-        j=str(j)
+        movies_list[i[0][0],i[0][1]]=i[0][2]
+        # d.append(i[0][0])
+        # d.append(i[0][2])
+
+        # movies_list.append(d)
+        # d=[]
+
+ #   print(movie_id)
+    #print(movies_list)
+    movies_list = sorted(movies_list.items(), key=operator.itemgetter(1),reverse=True)
+
+    for j in range(0,6):
+        j=str(movies_list[j][0][1])
         for row in reader:
             if j == row[0]:
                 imdb_id.append(row[1])
+               # print(imdb_id)
         open_file.seek(0)
         reader = csv.reader(open_file)
     imdb = Imdb()
+
     genre_top=[]
     d=[]
     for i in range(0,6):
         items = imdb.get_title_videos('tt'+imdb_id[i])
         d.append(items['image']['url'])
 
-    return (d,movies_list)
+    # print(d)
+    # print(movies_list)
+    movies_list1={}
+    for j in range(0,6):
+        tile=movies_list[j][0][0]
+        movies_list1[tile]=movies_list[j][1]
+    movies_list1= sorted(movies_list1.items(), key=operator.itemgetter(1), reverse=True)
+    print(movies_list1)
+    return (d,movies_list1)
+
 def take(n, iterable):
     "Return first n items of the iterable as a list"
     return list(islice(iterable, n))
@@ -154,17 +183,22 @@ def moviedata():
     for i in range(0, 6):
         d.append(dict[i]['image']['url'])
         r.append(dict[i]['title'])
-        r.append(dict[i]['year'])
+        t=str(dict[i]['year'])
+        r.append("("+ t +")")
         movie_id = dict[i]['id']
         ls = movie_id.split('/')
-        # rating = imdb.get_title_ratings(ls[2])
+        rating = imdb.get_title_ratings(ls[2])
+        #rg=int(rating['rating']) / 2
+
         try:
-            # r.append(rating['rating'])
-            r.append(0)
+            rg=rating['rating'] / 2
+            r.append(rg)
+        #    print(rating['rating'])
         except:
             r.append(0)
 
         n_list.append(d)
+       # print(r)
         moviedetails.append(r)
         d = []
         r = []
@@ -234,10 +268,16 @@ def reg_home(request):
         form = GenreForm(request.POST or None)
         if form.is_valid():
             checked_vals = request.POST.getlist('genres')
-
             UserProfile.objects.filter(user_id=request.user.id).update(genres=checked_vals)
-            n_list, moviedetails = moviedata()
-            return render(request, 'movies/home.html', {'dict': n_list, 'moviedetails': moviedetails})
+            # n_list, moviedetails = moviedata()
+            return redirect('/home')
+        else:
+            genreform = GenreForm()
+
+            return render(request, 'movies/interests.html', {'genreform': genreform,'error_message': 'Select atleast one genre'})
+
+
+            # return render(request, 'movies/home.html', {'dict': n_list, 'moviedetails': moviedetails})
 
 
 

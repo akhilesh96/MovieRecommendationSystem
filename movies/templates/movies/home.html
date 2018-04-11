@@ -16,6 +16,8 @@
 <link href="{% static 'movies/star-rating.css' %}" media="all" rel="stylesheet" type="text/css" />
 
 <!-- optionally if you need to use a theme, then include the theme CSS file as mentioned below -->
+    <link href="{% static 'movies/cutShort.css' %}" media="all" rel="stylesheet" type="text/css" />
+
 <link href="{% static 'movies/theme.css' %}" media="all" rel="stylesheet" type="text/css" />
 
 <!-- important mandatory libraries -->
@@ -75,9 +77,8 @@
         {% csrf_token %}
     <div class="col-lg-2">
         {% for i in movie %}
-        <img src="{{i}}"  style="align=middle;margin:auto; width:150px;height:200px;display:block">
+        <img src="{{i}}"  style="width:150px;height:200px;display:block">
         {% endfor %}
-
 
   </div>
 {% endfor %}
@@ -90,11 +91,18 @@
       <!--Sidebar content-->
         {% for i in movie %}
         {% csrf_token %}
-            {{i}}
-
-
+         {% if forloop.last %}
+               {% if i %}
+            <input id="input-3-xs" class="rating rating-loading" value={{i}} data-show-caption="false" data-show-clear="false" data-min="0" data-max="5" data-step="0.1" data-size="xs">
+               {% else %}
+              <b>Not yet Released</b>
+              {% endif %}
+         {% else %}
+          <!--   <div class = "cut-text">-->
+                {{i}}
+           <!--   </div> -->
+         {% endif %}
         {% endfor %}
-        <input id="input-3-xs" class="rating rating-loading" value="0" data-show-caption="false" data-show-clear="false" data-min="0" data-max="5" data-step="0.5" data-size="xs">
 
       &nbsp&nbsp&nbsp&nbsp
   </div>
@@ -112,25 +120,35 @@
      {% for i in k1 %}
     <div class="col-lg-2">
 
-        <img src="{{i}}"  style="margin:auto; width:150px;height:200px;display:block">
+        <img src="{{i}}"  style=" width:150px;height:200px;display:block">
   </div>
     {% endfor %}
 
-{% for i in k2 %}
+{% for key,value in k2 %}
     <div class="col-lg-2">
-                {% csrf_token %}
+        <!--{% csrf_token %}-->
       <!--Sidebar content-->
 
         {% csrf_token %}
-            {{i}}
+        <!--{% for i in movie %}-->
+        <!--{% csrf_token %}-->
+         <!--{% if forloop.last %}-->
 
-        <input id="input-4-xs" class="rating rating-loading" value="0" data-show-caption="false" data-show-clear="false" data-min="0" data-max="5" data-step="0.5" data-size="xs">
+            <!--<input id="input-4-xs" class="rating rating-loading" value={{i}} data-show-caption="false" data-show-clear="false" data-min="0" data-max="5" data-step="0.5" data-size="xs">-->
+
+         <!--{% else %}-->
+          <!--&lt;!&ndash;   <div class = "cut-text">&ndash;&gt;-->
+                  <!--{{i}}-->
+           <!--   </div> -->
+         <!--{% endif %}-->
+        <!--{% endfor %}-->
+            {{key}}
+        <input id="input-4-xs" class="rating rating-loading" value="{{value}}" data-show-caption="false" data-show-clear="false" data-min="0" data-max="5" data-step="0.1" data-size="xs">
 
   </div>
-            {% endfor %}
+    {% endfor %}
 
 </div>
-
 {% block body %}
 {% endblock %}
 </body>
