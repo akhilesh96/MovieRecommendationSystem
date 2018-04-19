@@ -25,7 +25,7 @@ SECRET_KEY = 'n0^(=#8*918v=su1yq$b4-s46vwdst%b%c-y9%=(+9@hxrs_!8'
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = ['192.168.43.55', 'localhost','10.18.3.239']
+ALLOWED_HOSTS = ['192.168.43.55', 'localhost','10.18.3.239','127.0.0.1']
 
 
 # Application definition
@@ -39,6 +39,7 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     'movies',
     'multiselectfield',
+    'haystack',
 ]
 
 MIDDLEWARE = [
@@ -122,3 +123,11 @@ TIME_ZONE = 'utc'
 # https://docs.djangoproject.com/en/2.0/howto/static-files/
 
 STATIC_URL = '/static/'
+HAYSTACK_CONNECTIONS = {
+    'default': {
+        'ENGINE': 'haystack.backends.solr_backend.SolrEngine',
+        'URL': 'http://127.0.0.1:8983/solr'
+        # ...or for multicore...
+        # 'URL': 'http://127.0.0.1:8983/solr/mysite',
+    },
+}

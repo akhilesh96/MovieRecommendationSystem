@@ -25,35 +25,7 @@
 <script src="{% static 'movies/js/star-rating.js' %}" type="text/javascript"></script>
 
 <!-- optionally if you need to use a theme, then include the theme JS file as mentioned below -->
-<script src="{% static 'movies/js/theme.js' %}"></script>
-<style>
-.image {
-  display: block;
-  width: 100%;
-  height: auto;
-}
 
-/* The overlay effect - lays on top of the container and over the image */
-.overlay {
-  position: absolute;
-  bottom: 0;
-  background: rgb(0, 0, 0);
-  background: rgba(0, 0, 0, 0.5); /* Black see-through */
-  color: #f1f1f1;
-  width: 170px;
-  height:230px;
-  transition: .5s ease;
-  opacity:0;
-  color: white;
-  font-size: 15px;
-  padding: 20px;
-  text-align: center;
-}
-
-.col-lg-2:hover .overlay {
-  opacity: 1;
-}
-</style>
 </head>
 <body>
 <nav class="navbar navbar-inverse">
@@ -95,105 +67,22 @@
     <!--{% load staticfiles %}-->
 <!--<br>-->
 <!--<br>-->
-<div class="row-fluid">
+<div >
+    {% for movie in dlist %}
+    {% csrf_token %}
+        {% if forloop.first %}
+        <div class="col-lg-6">
 
-   <h4> Popular Movies</h4>
-{% for movie in dict %}
-        {% csrf_token %}
-    <div class="col-lg-2">
-
-        {% for i in movie %}
-
-            {% if forloop.last %}
-                 <img src="{{i}}"  style="width:170px;height:230px;display:block" class="image">
-
-
-
-
-            {% else %}
-
-                {% for key,value in i.items%}
-                     <a href="{% url 'movies:detail' key %}" role="button" ><div class="overlay">{{value}}</div></a>
-
-                {% endfor %}
-
+                 <img src="{{movie}}"  style="width: 100%; height: 85%">
+        </div>
+        {% else %}
+              {{movie}}
             {% endif %}
 
-        {% endfor %}
-
-  </div>
-{% endfor %}
-
-
-
-{% for movie in moviedetails %}
-    <div class="col-lg-2">
-                {% csrf_token %}
-      <!--Sidebar content-->
-        {% for i in movie %}
-        {% csrf_token %}
-         {% if forloop.last %}
-               {% if i %}
-            <input id="input-3-xs" class="rating rating-loading" value={{i}} data-show-caption="false" data-show-clear="false" data-min="0" data-max="5" data-step="0.1" data-size="xs">
-               {% else %}
-              <b>Not yet Released</b>
-              {% endif %}
-         {% else %}
-             <div class = "cut-text">
-                {{i}}
-              </div>
-         {% endif %}
-        {% endfor %}
-
-      &nbsp&nbsp&nbsp&nbsp
-  </div>
-{% endfor %}
-</div>
-
-
-
-<div class="row-fluid">
-    <br>
-    <br>
-    <br>
-   <h4 align="left"> Genre Based Top Movies</h4>
-        {% csrf_token %}
-     {% for i in k1 %}
-    <div class="col-lg-2">
-
-        <img src="{{i}}"  style=" width:150px;height:200px;display:block">
-  </div>
-    {% endfor %}
-
-{% for key,value in k2 %}
-    <div class="col-lg-2">
-        <!--{% csrf_token %}-->
-      <!--Sidebar content-->
-
-        {% csrf_token %}
-        <!--{% for i in movie %}-->
-        <!--{% csrf_token %}-->
-         <!--{% if forloop.last %}-->
-
-            <!--<input id="input-4-xs" class="rating rating-loading" value={{i}} data-show-caption="false" data-show-clear="false" data-min="0" data-max="5" data-step="0.5" data-size="xs">-->
-
-         <!--{% else %}-->
-          <!--&lt;!&ndash;   <div class = "cut-text">&ndash;&gt;-->
-                  <!--{{i}}-->
-           <!--   </div> -->
-         <!--{% endif %}-->
-        <!--{% endfor %}-->
-            {{key}}
-        <input id="input-4-xs" class="rating rating-loading" value="{{value}}" data-show-caption="false" data-show-clear="false" data-min="0" data-max="5" data-step="0.1" data-size="xs">
-
-  </div>
     {% endfor %}
 
 </div>
-{% block body %}
-{% endblock %}
-</body>
-</html>
+
 <script type="text/javascript">
 
    $('.rate').rating({
@@ -205,3 +94,5 @@
 
 
 </script>
+</body>
+</html>
