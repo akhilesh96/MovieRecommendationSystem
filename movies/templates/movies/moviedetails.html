@@ -1,9 +1,9 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>{% block title %}MRS{% endblock %}</title>
+    <title>{% block title %}{{title}}{% endblock %}</title>
     {% load staticfiles %}
-    <link rel="shortcut icon" type="image/png" href="{%  static 'favicon.ico' %}"/>
+    <link rel="shortcut icon" type="image/png" href="{%  static 'tempicon.ico' %}"/>
     <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/css/bootstrap.min.css">
     <link href='https://fonts.googleapis.com/css?family=Satisfy' rel='stylesheet' type='text/css'>
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.12.0/jquery.min.js"></script>
@@ -76,7 +76,51 @@
                  <img src="{{movie}}"  style="width: 100%; height: 85%">
         </div>
         {% else %}
-              {{movie}}
+               <h3 class="movie-title" style="text-transform: UPPERCASE;font-weight: bold;">{{movie.0}}</h3>
+                <h4>Year : {{movie.1}}</h4>
+                <h4>Running Time: {{movie.2}}</h4>
+                <h4>Genres:
+                        {% for i in movie.3 %}
+                            {{i}}
+                    {% if forloop.last %}
+                        .
+                    {%else%}
+                     ,
+                    {% endif %}
+                    {% endfor %}
+                </h4>
+                <p>Plot: {{movie.4}} </p>
+                <h4>Director: {{movie.5.director}} </h4>
+                <h4>Producer: {{movie.5.producer}} </h4>
+                <h4>Writers:
+
+                    {% for i in movie.5.writers %}
+                    {{ i }}
+                    {% if forloop.last %}
+                      .
+                    {% else %}
+                        ,
+                    {% endif %}
+                    {% endfor %}
+                </h4>
+    <h4>Cast and crew :</h4>
+                <h4>{% for i in movie.6 %}
+                     {% for key,value in i.items %}
+                        {{key}} as
+                        {% for k in value %}
+                            {{k}}
+                        {% if forloop.last %}
+                            .
+                        {%else%}
+                            ,
+                    {% endif %}
+                    {% endfor %}
+                    {% endfor %}
+                    <br>
+                {% endfor %}
+
+
+
             {% endif %}
 
     {% endfor %}

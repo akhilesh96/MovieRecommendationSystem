@@ -169,7 +169,6 @@ def retreive(UserRequest):
         tile = movies_list[j][0][0]
         movies_list1[tile] = movies_list[j][1]
     movies_list1 = sorted(movies_list1.items(), key=operator.itemgetter(1), reverse=True)
-    print(movies_list1)
     return (d, movies_list1)
 
 
@@ -188,10 +187,8 @@ def normalize_query(query_string,
     ''' Splits the query string in invidual keywords, getting rid of unecessary spaces
         and grouping quoted words together.
         Example:
-
         >>> normalize_query('  some random  words "with   quotes  " and   spaces')
         ['some', 'random', 'words', 'with quotes', 'and', 'spaces']
-
     '''
     return [normspace(' ', (t[0] or t[1]).strip()) for t in findterms(query_string)]
 
@@ -199,7 +196,6 @@ def normalize_query(query_string,
 def get_query(query_string, search_fields):
     ''' Returns a query, that is a combination of Q objects. That combination
         aims to search keywords within a model by testing the given search fields.
-
     '''
     query = None  # Query to search for every search term
     terms = normalize_query(query_string)
@@ -260,26 +256,33 @@ def detail(request, movie_id):
         imdb = Imdb()
         titledetails = imdb.get_title(movie_id)
         dlist = []
+        detlist=[]
         try:
             dlist.append(titledetails['base']['image']['url'])
         except:
             # insert a null image
             dlist.append(' ')
 
-        dlist.append(titledetails['base']['title'])
-        dlist.append(titledetails['base']['year'])
+        detlist.append(titledetails['base']['title'])
+        title=titledetails['base']['title']
+        detlist.append(titledetails['base']['year'])
         try:
-            dlist.append(titledetails['base']['runningTimeInMinutes'])
-        except:
-            dlist.append('-')
+            min=int(titledetails['base']['runningTimeInMinutes'])
+            hrs=int(min/60)
+            minutes=min-60*hrs
+            time=str(hrs)+'hr '+str(minutes)+'min'
 
-        dlist.append(imdb.get_title_genres(movie_id)['genres'])
-        try:
-            dlist.append(titledetails['plot']['summaries'][0]['text'])
+            detlist.append(time)
         except:
-            dlist.append('-')
+            detlist.append('-')
+
+        detlist.append(imdb.get_title_genres(movie_id)['genres'])
         try:
-            print('hei')
+            detlist.append(titledetails['plot']['summaries'][0]['text'])
+        except:
+            detlist.append('-')
+        try:
+            print('hello')
             castandcrew = imdb.get_title_credits(movie_id)
             castlist = []
             detdict={}
@@ -288,16 +291,20 @@ def detail(request, movie_id):
             writers = []
             for i in castandcrew['credits']['writer']:
                 writers.append(i['name'])
-            detdict['writers']=writers
-            dlist.append(detdict)
-            for i in range(0, 5):
+            writerset=set(writers)
+            detdict['writers']=list(writerset)
+            print(detlist)
+            print(detdict)
+            detlist.append(detdict)
+            for i in range(0, 6):
                 castdict = {}
                 castdict[castandcrew['credits']['cast'][i]['name']] = castandcrew['credits']['cast'][i]['characters']
                 castlist.append(castdict)
-            dlist.append(castlist)
+            detlist.append(castlist)
         except:
-            dlist.append('-')
-        return render(request, 'movies/moviedetails.html', {'dlist': dlist})
+            detlist.append('-')
+        dlist.append(detlist)
+        return render(request, 'movies/moviedetails.html', {'dlist': dlist,'title':title})
 
 
 def moviedata():
