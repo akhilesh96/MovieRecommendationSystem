@@ -20,7 +20,6 @@ class Migration(migrations.Migration):
         migrations.CreateModel(
             name='UserProfile',
             fields=[
-                ('id', models.AutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
                 ('genres', multiselectfield.db.fields.MultiSelectField(choices=[(0, 'unknown'), (1, 'Action'), (2, 'Adventure'), (3, 'Animation'), (4, 'Childrens'), (5, 'Comedy'), (6, 'Crime'), (7, 'Documentary'), (8, 'Drama'), (9, 'Fantasy'), (10, 'Film_Noir'), (11, 'Horror'), (12, 'Musical'), (13, 'Mystery'), (14, 'Romance'), (15, 'Sci_Fi'), (16, 'Thriller'), (17, 'War'), (18, 'Western')], max_length=46)),
                 ('user', models.OneToOneField(on_delete=django.db.models.deletion.CASCADE, to=settings.AUTH_USER_MODEL)),
             ],

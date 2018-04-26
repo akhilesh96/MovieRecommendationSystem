@@ -7,10 +7,14 @@
     <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/css/bootstrap.min.css">
     <link href='https://fonts.googleapis.com/css?family=Satisfy' rel='stylesheet' type='text/css'>
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.12.0/jquery.min.js"></script>
+
     <script src="http://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/js/bootstrap.min.js"></script>
     <link href="http://www.jqueryscript.net/css/jquerysctipttop.css" rel="stylesheet" type="text/css">
     <script src="https://code.jquery.com/jquery-3.2.1.min.js"></script>
 
+    <link rel="stylesheet" href="owlcarousel/owl.carousel.min.css">
+
+    <link rel="stylesheet" href="owlcarousel/owl.theme.default.min.css">
 
      <link href="http://netdna.bootstrapcdn.com/bootstrap/3.3.6/css/bootstrap.css" rel="stylesheet">
 <link href="{% static 'movies/star-rating.css' %}" media="all" rel="stylesheet" type="text/css" />
@@ -26,7 +30,16 @@
 
 <!-- optionally if you need to use a theme, then include the theme JS file as mentioned below -->
 <script src="{% static 'movies/js/theme.js' %}"></script>
+
 <style>
+.carousel-inner .active.left { left: -33%; }
+.carousel-inner .next        { left:  33%; }
+.carousel-inner .prev        { left: -33%; }
+.carousel-control.left,.carousel-control.right {background-image:none;}
+.item:not(.prev) {visibility: visible;}
+.item.right:not(.prev) {visibility: hidden;}
+.rightest{ visibility: visible;}
+
 .image {
   display: block;
   width: 100%;
@@ -95,19 +108,16 @@
     <!--{% load staticfiles %}-->
 <!--<br>-->
 <!--<br>-->
-<div class="row-fluid">
-
+<div class="owl-carousel owl-theme">
    <h4> Popular Movies</h4>
 {% for movie in dict %}
         {% csrf_token %}
-    <div class="col-lg-2">
+    <div class="item">
 
         {% for i in movie %}
 
             {% if forloop.last %}
                  <img src="{{i}}"  style="width:170px;height:230px;display:block" class="image">
-
-
 
 
             {% else %}
@@ -123,9 +133,10 @@
 
   </div>
 {% endfor %}
+</div>
 
 
-
+<div class="row-fluid">
 {% for movie in moviedetails %}
     <div class="col-lg-2">
                 {% csrf_token %}
@@ -134,9 +145,9 @@
         {% csrf_token %}
          {% if forloop.last %}
                {% if i %}
-            <input id="input-3-xs" class="rating rating-loading" value={{i}} data-show-caption="false" data-show-clear="false" data-min="0" data-max="5" data-step="0.1" data-size="xs">
-               {% else %}
-              <b>Not yet Released</b>
+            <input id="input-3-xs-{{forloop.parentloop.counter}}"  class="rating rating-loading" value={{i}} data-show-caption="false" data-show-clear="false" data-min="0" data-max="5" data-step="0.1" data-size="xs" >
+            {% else %}
+              <b>Not yet23 Released</b>
               {% endif %}
          {% else %}
              <div class = "cut-text">
@@ -154,54 +165,100 @@
 
 <div class="row-fluid">
     <br>
-    <br>
-    <br>
+    &nbsp&nbsp&nbsp&nbsp
    <h4 align="left"> Genre Based Top Movies</h4>
         {% csrf_token %}
-     {% for i in k1 %}
-    <div class="col-lg-2">
-
-        <img src="{{i}}"  style=" width:150px;height:200px;display:block">
-  </div>
-    {% endfor %}
-
-{% for key,value in k2 %}
-    <div class="col-lg-2">
-        <!--{% csrf_token %}-->
-      <!--Sidebar content-->
-
+    {% for mov in k1 %}
         {% csrf_token %}
-        <!--{% for i in movie %}-->
-        <!--{% csrf_token %}-->
-         <!--{% if forloop.last %}-->
+    <div class="col-lg-2">
+        {% for i in mov %}
+            {% if forloop.first %}
+                 <img src="{{i}}"  style="width:170px;height:230px;display:block" class="image">
+            {% else %}
+                {% for key,value in i.items%}
+                     <a href="{% url 'movies:detail' key %}" role="button" ><div class="overlay">{{value}}</div></a>
 
-            <!--<input id="input-4-xs" class="rating rating-loading" value={{i}} data-show-caption="false" data-show-clear="false" data-min="0" data-max="5" data-step="0.5" data-size="xs">-->
+                {% endfor %}
 
-         <!--{% else %}-->
-          <!--&lt;!&ndash;   <div class = "cut-text">&ndash;&gt;-->
-                  <!--{{i}}-->
-           <!--   </div> -->
-         <!--{% endif %}-->
-        <!--{% endfor %}-->
-            {{key}}
-        <input id="input-4-xs" class="rating rating-loading" value="{{value}}" data-show-caption="false" data-show-clear="false" data-min="0" data-max="5" data-step="0.1" data-size="xs">
+            {% endif %}
+
+        {% endfor %}
 
   </div>
-    {% endfor %}
+{% endfor %}
+</div>
 
+<div class="row-fluid">
+{% for j in k2 %}
+     <div class="col-lg-2">
+    {% for i in j %}
+        {% if forloop.first %}
+                <div class = "cut-text">
+                         {{i}}
+                  </div>
+        {% else %}
+            {% for key,value in i.items %}
+                <input id="{{key}}" class="rating rating-loading" value="{{value}}" data-show-caption="false" data-show-clear="false" data-min="0" data-max="5" data-step="0.1" data-size="xs">
+
+            {% endfor %}
+        {% endif %}
+
+    {% endfor %}
+     </div>
+    {% endfor %}
 </div>
 {% block body %}
 {% endblock %}
+</div>
 </body>
 </html>
 <script type="text/javascript">
-
+    console.log("hello world");
    $('.rate').rating({
+
       size:20,                      //this option defines the size of the star
       primaryColor:"#999",         //this color code defines the primary color of stars
       hoverColor:"#0066ff",        //this color code defines the hover state of stars
       count:5                      //defines the number of stars you want in a rater
    });
+
+
+$('input').on('rating:change', function(event, value, caption) {
+    console.log(event.target.id);
+    $.ajax(
+    {
+        type:"POST",
+        url: "/ratingurl/",
+        data:{
+                 movie_id: event.target.id,
+                 rating:value
+        },
+        success: function( data )
+        {
+
+        }
+     })
+
+
+});
+
+$('.owl-carousel').owlCarousel({
+    loop:true,
+    margin:10,
+    nav:true,
+    responsive:{
+        0:{
+            items:1
+        },
+        600:{
+            items:3
+        },
+        1000:{
+            items:5
+        }
+    }
+})
+
 
 
 </script>

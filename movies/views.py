@@ -3,11 +3,12 @@ from django.shortcuts import render, redirect
 from django.contrib.auth import authenticate, login
 from django.contrib.auth import logout
 from django.contrib.auth.models import User
-from .models import UserProfile
+from .models import UserProfiles
 from imdbpie import Imdb
 from django.http import HttpResponseRedirect
 import sys
-import csv
+import csv,math
+import time
 from itertools import islice
 import operator
 import simplejson as json
@@ -15,6 +16,7 @@ from django.http import HttpResponse
 from haystack.query import SearchQuerySet
 
 from .forms import UserForm, GenreForm, NewForm
+from django.views.decorators.csrf import csrf_exempt
 
 import re
 
@@ -89,6 +91,60 @@ class Ratings(object):
 
         return grid.ix[grid['bayes'].argsort()[-n:]]
 
+def loadMovieLens(path='C:\\Users\\Akhilesh\\Downloads\\ml-latest'):
+    # Get movie titles
+    movies={}
+    # with open(path+'\\movies.csv', encoding='UTF8') as f:
+    #     next(f)
+    #     for line in f:
+    #         (id1,title)=line.split(',')[0:2]
+    #         movies[id1]=title
+    # Load data
+    prefs={}
+    with open(path+'\\ratings.csv', encoding='UTF8') as f:
+        next(f)
+        for line in f:
+            (user,movieid,rating,ts)=line.split(',')
+            prefs.setdefault(user,{})
+            prefs[user][movieid]=float(rating)
+    return prefs
+
+def sim_pearson(prefs,p1,p2):
+    si={}
+    for item in prefs[p1]:
+        if item in prefs[p2]: si[item]=1
+    n=len(si)
+    if n==0: return 0
+    sum1=sum([prefs[p1][it] for it in si])
+    sum2=sum([prefs[p2][it] for it in si])
+    sum1Sq=sum([pow(prefs[p1][it],2) for it in si])
+    sum2Sq=sum([pow(prefs[p2][it],2) for it in si])
+    pSum=sum([prefs[p1][it]*prefs[p2][it] for it in si])
+    num=pSum-(sum1*sum2/n)
+    den=math.sqrt((sum1Sq-pow(sum1,2)/n)*(sum2Sq-pow(sum2,2)/n))
+    if den==0: return 0
+    r=num/den
+    return r
+
+def getRecommendations(prefs,person,similarity=sim_pearson):
+    totals = {}
+    simSums = {}
+    for other in prefs:
+        if other == person:
+            continue
+        sim = similarity(prefs,person,other)
+        if sim<=0:
+           continue
+        for item in prefs[other]:
+            if item not in prefs[person] or prefs[person][item]==0:
+                totals.setdefault(item,0)
+                totals[item]+=prefs[other][item]*sim
+                simSums.setdefault(item,0)
+                simSums[item]+=sim
+    rankings=[(total/simSums[item],item) for item,total in totals.items( )]
+    rankings.sort( )
+    rankings.reverse( )
+    return rankings
 
 def retreive(UserRequest):
     movieId = []
@@ -102,7 +158,7 @@ def retreive(UserRequest):
     next(reader, None)
     w, h = 18, 1;
     Matrix = [[0 for x in range(h)] for y in range(w)]
-    usr = UserProfile.objects.filter(user=UserRequest)
+    usr = UserProfiles.objects.filter(user=UserRequest)
     gen = usr.values_list('genres')
     ls = gen[0]
     for i in ls[0]:
@@ -127,13 +183,15 @@ def retreive(UserRequest):
         genrerecommend[r[0][0], r[0][2], bayesscore] = count * bayesscore
 
     sorted_genres = sorted(genrerecommend.items(), key=operator.itemgetter(1), reverse=True)
-
+    #print(sorted_genres)
     movie_id = []
     imdb_id = []
     movies_list = {}
     # movies_list=[]
     d = []
     for i in sorted_genres[:6]:
+
+
         movie_id.append(i[0][1])
         movies_list[i[0][0], i[0][1]] = i[0][2]
         # d.append(i[0][0])
@@ -143,7 +201,7 @@ def retreive(UserRequest):
         # d=[]
 
         #   print(movie_id)
-    # print(movies_list)
+    #print(movies_list)
     movies_list = sorted(movies_list.items(), key=operator.itemgetter(1), reverse=True)
 
     for j in range(0, 6):
@@ -157,19 +215,39 @@ def retreive(UserRequest):
     imdb = Imdb()
 
     genre_top = []
-    d = []
-    for i in range(0, 6):
-        items = imdb.get_title('tt' + imdb_id[i])
-        d.append(items['base']['image']['url'])
-
     # print(d)
     # print(movies_list)
-    movies_list1 = {}
+
+    newlist=[]
+    d=[]
+    images_file = open('C:\\Users\\Akhilesh\\Downloads\\ml-latest\\imagesnew.csv', encoding="utf8")
+    reader = csv.reader(images_file)
+    next(reader, None)
     for j in range(0, 6):
+        movlist=[]
+        m1=[]
+        movies_list1 = {}
+        d1={}
+       # items = imdb.get_title('tt' + imdb_id[j])
         tile = movies_list[j][0][0]
-        movies_list1[tile] = movies_list[j][1]
-    movies_list1 = sorted(movies_list1.items(), key=operator.itemgetter(1), reverse=True)
-    return (d, movies_list1)
+        for k in reader:
+            if imdb_id[j]==k[1]:
+                m1.append(k[2])
+                movieid=k[0]
+                # d.append(k[2])
+                break
+        movies_list1[movieid] = movies_list[j][1]
+        images_file.seek(0)
+        reader = csv.reader(images_file)
+        d1['tt'+imdb_id[j]]=tile
+        m1.append(d1)
+        movlist.append(tile)
+        movlist.append(movies_list1)
+        newlist.append(movlist)
+        d.append(m1)
+
+    # movies_list1 = sorted(movies_list1.items(), key=operator.itemgetter(1), reverse=True)
+    return (d,newlist)
 
 
 def take(n, iterable):
@@ -282,7 +360,7 @@ def detail(request, movie_id):
         except:
             detlist.append('-')
         try:
-            print('hello')
+            #print('hello')
             castandcrew = imdb.get_title_credits(movie_id)
             castlist = []
             detdict={}
@@ -293,8 +371,7 @@ def detail(request, movie_id):
                 writers.append(i['name'])
             writerset=set(writers)
             detdict['writers']=list(writerset)
-            print(detlist)
-            print(detdict)
+
             detlist.append(detdict)
             for i in range(0, 6):
                 castdict = {}
@@ -324,9 +401,10 @@ def moviedata():
         tempdict[ls[2]] = dict[i]['title']
         d.append(tempdict)
         d.append(url)
-        r.append(dict[i]['title'])
         t = str(dict[i]['year'])
-        r.append("(" + t + ")")
+        r.append(dict[i]['title']+("(" + t + ")"))
+
+       # r.append("(" + t + ")")
 
         # rg=int(rating['rating']) / 2
 
@@ -342,15 +420,23 @@ def moviedata():
         moviedetails.append(r)
         d = []
         r = []
+    #print(n_list)
     return (n_list, moviedetails)
 
 
 def home(request):
     n_list, moviedetails = moviedata()
-
-    k1, k2 = retreive(request.user)
-    return render(request, 'movies/home.html', {'dict': n_list, 'moviedetails': moviedetails, 'k1': k1, 'k2': k2})
-    return render(request, 'movies/home.html')
+    # preferences = loadMovieLens()
+    # userId = str(request.user.id)
+    # recommendations = getRecommendations(preferences, userId)
+    # size = len(recommendations)
+    # i = 0
+    # while i < 5:
+    #     print(recommendations[i])
+    #     print('end')
+    #     i = i+1
+    k1,k2 = retreive(request.user)
+    return render(request, 'movies/home.html', {'dict': n_list, 'moviedetails': moviedetails, 'k1': k1,'k2':k2})
 
 
 def login_user(request):
@@ -409,7 +495,7 @@ def reg_home(request):
         form = GenreForm(request.POST or None)
         if form.is_valid():
             checked_vals = request.POST.getlist('genres')
-            UserProfile.objects.filter(user_id=request.user.id).update(genres=checked_vals)
+            UserProfiles.objects.filter(user_id=request.user.id).update(genres=checked_vals)
             # n_list, moviedetails = moviedata()
             return redirect('/home')
         else:
@@ -420,3 +506,22 @@ def reg_home(request):
 
 
             # return render(request, 'movies/home.html', {'dict': n_list, 'moviedetails': moviedetails})
+
+@csrf_exempt
+def rating(request):
+    if request.method == 'POST':
+        movieId = request.POST['movie_id']
+        rating = request.POST['rating']
+        userId = str(request.user.id)
+        userdetails=UserProfiles.objects.filter(user_id=userId);
+        print(userdetails)
+        ts = time.time()
+        timeStamp = int(ts)
+        timeStamp=str(timeStamp)
+        # fd = open('C:\\Users\\Akhilesh\\Downloads\\ml-latest\\ratings.csv', 'a')
+        # mycsvrow = userId + ',' + movieId + ',' + rating + ','+timeStamp+'\n'
+        # fd.write(mycsvrow)
+        # fd.close()
+        return HttpResponse("Success!") # Sending an success response
+    else:
+        return HttpResponse("Request method is not a GET")
