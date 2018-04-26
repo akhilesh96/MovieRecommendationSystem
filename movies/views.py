@@ -189,7 +189,7 @@ def retreive(UserRequest):
     movies_list = {}
     # movies_list=[]
     d = []
-    for i in sorted_genres[:6]:
+    for i in sorted_genres[:12]:
 
 
         movie_id.append(i[0][1])
@@ -204,7 +204,7 @@ def retreive(UserRequest):
     #print(movies_list)
     movies_list = sorted(movies_list.items(), key=operator.itemgetter(1), reverse=True)
 
-    for j in range(0, 6):
+    for j in range(0, 12):
         j = str(movies_list[j][0][1])
         for row in reader:
             if j == row[0]:
@@ -214,25 +214,21 @@ def retreive(UserRequest):
         reader = csv.reader(open_file)
     imdb = Imdb()
 
-    genre_top = []
-    # print(d)
-    # print(movies_list)
+
 
     newlist=[]
-    d=[]
     images_file = open('C:\\Users\\Akhilesh\\Downloads\\ml-latest\\imagesnew.csv', encoding="utf8")
     reader = csv.reader(images_file)
     next(reader, None)
-    for j in range(0, 6):
-        movlist=[]
-        m1=[]
+    for j in range(0, 12):
+        genrelist=[]
         movies_list1 = {}
         d1={}
        # items = imdb.get_title('tt' + imdb_id[j])
         tile = movies_list[j][0][0]
         for k in reader:
             if imdb_id[j]==k[1]:
-                m1.append(k[2])
+                genrelist.append(k[2])
                 movieid=k[0]
                 # d.append(k[2])
                 break
@@ -240,14 +236,12 @@ def retreive(UserRequest):
         images_file.seek(0)
         reader = csv.reader(images_file)
         d1['tt'+imdb_id[j]]=tile
-        m1.append(d1)
-        movlist.append(tile)
-        movlist.append(movies_list1)
-        newlist.append(movlist)
-        d.append(m1)
-
+        genrelist.append(d1)
+        genrelist.append(tile)
+        genrelist.append(movies_list1)
+        newlist.append(genrelist)
     # movies_list1 = sorted(movies_list1.items(), key=operator.itemgetter(1), reverse=True)
-    return (d,newlist)
+    return (newlist)
 
 
 def take(n, iterable):
@@ -392,17 +386,17 @@ def moviedata():
     r = []
     moviedetails = []
     n_list = []
-    for i in range(0, 6):
+    for i in range(0, 12):
         tempdict = {}
         movie_id = dict[i]['id']
         ls = movie_id.split('/')
         rating = imdb.get_title_ratings(ls[2])
         url = dict[i]['image']['url']
         tempdict[ls[2]] = dict[i]['title']
-        d.append(tempdict)
         d.append(url)
+        d.append(tempdict)
         t = str(dict[i]['year'])
-        r.append(dict[i]['title']+("(" + t + ")"))
+        d.append(dict[i]['title']+("(" + t + ")"))
 
        # r.append("(" + t + ")")
 
@@ -410,22 +404,22 @@ def moviedata():
 
         try:
             rg = rating['rating'] / 2
-            r.append(rg)
+            d.append(rg)
         # print(rating['rating'])
         except:
-            r.append(0)
+            d.append(0)
 
         n_list.append(d)
         # print(r)
-        moviedetails.append(r)
+        # moviedetails.append(r)
         d = []
-        r = []
+        # r = []
     #print(n_list)
-    return (n_list, moviedetails)
+    return (n_list)
 
 
 def home(request):
-    n_list, moviedetails = moviedata()
+    n_list = moviedata()
     # preferences = loadMovieLens()
     # userId = str(request.user.id)
     # recommendations = getRecommendations(preferences, userId)
@@ -435,8 +429,8 @@ def home(request):
     #     print(recommendations[i])
     #     print('end')
     #     i = i+1
-    k1,k2 = retreive(request.user)
-    return render(request, 'movies/home.html', {'dict': n_list, 'moviedetails': moviedetails, 'k1': k1,'k2':k2})
+    newlist = retreive(request.user)
+    return render(request, 'movies/home.html', {'dict': n_list,  'newlist':newlist})
 
 
 def login_user(request):
