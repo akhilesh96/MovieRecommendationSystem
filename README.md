@@ -9,11 +9,11 @@ After users provide ratings to some movies, his recommendations are modified and
 
 Typical user home page has following types of recommendations:
 
-1)Popular Movies: The most popular english movies as per IMDB will appear here.
+1) Popular Movies: The most popular english movies as per IMDB will appear here.
 
-2)Genre Based Movies: The highly rated movies which match user's interested genres appear here.
+2) Genre Based Movies: The highly rated movies which match user's interested genres appear here.
 
-3)User Based Movies: The Actual Recommendations based on user's ratings are shown in this category.
+3) User Based Movies: The Actual Recommendations based on user's ratings are shown in this category.
 
 
 A user can add favourites and can give 0.2 to 5.0 rating for any movie in 0.2 increments.
